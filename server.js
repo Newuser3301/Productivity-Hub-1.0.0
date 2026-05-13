@@ -43,3 +43,13 @@ const server = http.createServer((request, response) => {
 server.listen(port, '0.0.0.0', () => {
   console.log(`Productivity Hub web server running on port ${port}`);
 });
+
+const shutdown = (signal) => {
+  console.log(`${signal} received, shutting down Productivity Hub web server.`);
+  server.close(() => {
+    process.exit(0);
+  });
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
