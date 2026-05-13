@@ -9,6 +9,9 @@ export default defineConfig({
     port: 5173,
     strictPort: true
   },
+  preview: {
+    allowedHosts: ['productivity-hub-1-0-0.onrender.com']
+  },
   build: {
     outDir: 'dist',
     emptyOutDir: true

@@ -12,7 +12,7 @@ services:
       - "4173:4173"
     volumes:
       - productivity-hub-data:/root/.config/Productivity Hub
-    command: ["npm", "run", "preview"]
+    command: ["npm", "start"]
 
 volumes:
   productivity-hub-data:

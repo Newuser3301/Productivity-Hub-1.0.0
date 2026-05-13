@@ -16,4 +16,4 @@ COPY --from=build /app/electron ./electron
 COPY --from=build /app/public ./public
 RUN npm install --omit=dev
 VOLUME ["/root/.config/Productivity Hub"]
-CMD ["npm", "run", "preview"]
+CMD ["npm", "start"]
