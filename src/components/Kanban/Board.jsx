@@ -16,7 +16,7 @@ export default function Board() {
 
   return (
     <div className="flex h-full flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <SearchFilter />
         <button className="btn-primary" onClick={() => importMatrixTasks(matrixTasks)}><Download className="h-4 w-4" /> Import Matrix Tasks</button>
       </div>

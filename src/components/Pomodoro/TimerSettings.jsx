@@ -13,7 +13,7 @@ export default function TimerSettings() {
   const updateSettings = usePomodoroStore((state) => state.updateSettings);
 
   return (
-    <div className="panel grid grid-cols-2 gap-3 p-4">
+    <div className="panel grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
       {fields.map(([key, label]) => (
         <label key={key} className="text-sm font-semibold text-slate-600 dark:text-slate-300">
           {label}

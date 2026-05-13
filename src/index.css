@@ -17,9 +17,9 @@
 
 body {
   margin: 0;
-  min-width: 1024px;
-  min-height: 700px;
-  overflow: hidden;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow: auto;
   background:
     radial-gradient(circle at 12% 18%, rgba(34, 211, 238, 0.22), transparent 30%),
     radial-gradient(circle at 82% 12%, rgba(125, 211, 252, 0.24), transparent 28%),
@@ -49,15 +49,15 @@ select {
 
 @layer components {
   .panel {
-    @apply rounded-[1.4rem] border border-white/70 bg-white/65 shadow-soft backdrop-blur-2xl transition duration-300 dark:border-white/10 dark:bg-slate-950/60;
+    @apply rounded-2xl border border-white/70 bg-white/65 shadow-soft backdrop-blur-2xl transition duration-300 dark:border-white/10 dark:bg-slate-950/60 md:rounded-[1.4rem];
   }
 
   .glass-shell {
-    @apply rounded-[2rem] border border-white/70 bg-white/45 shadow-soft backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/45;
+    @apply rounded-2xl border border-white/70 bg-white/45 shadow-soft backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/45 md:rounded-[2rem];
   }
 
   .soft-card {
-    @apply rounded-[1.25rem] border border-white/80 bg-white/75 shadow-sm backdrop-blur-xl transition duration-300 hover:-translate-y-0.5 hover:shadow-soft dark:border-white/10 dark:bg-slate-900/70;
+    @apply rounded-2xl border border-white/80 bg-white/75 shadow-sm backdrop-blur-xl transition duration-300 hover:-translate-y-0.5 hover:shadow-soft dark:border-white/10 dark:bg-slate-900/70 md:rounded-[1.25rem];
   }
 
   .stat-chip {
@@ -86,6 +86,6 @@ select {
   }
 
   .icon-btn {
-    @apply inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/60 bg-white/45 text-slate-600 shadow-sm backdrop-blur-xl transition duration-200 hover:-translate-y-0.5 hover:bg-white/90 hover:text-cyan-950 dark:border-white/10 dark:bg-slate-900/45 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white;
+    @apply inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/60 bg-white/45 text-slate-600 shadow-sm backdrop-blur-xl transition duration-200 hover:-translate-y-0.5 hover:bg-white/90 hover:text-cyan-950 dark:border-white/10 dark:bg-slate-900/45 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white;
   }
 }

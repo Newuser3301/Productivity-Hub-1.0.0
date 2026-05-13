@@ -25,12 +25,12 @@ export default function Calendar() {
 
   return (
     <div className="flex h-full flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <WeekNavigation />
-        <div className="text-sm font-semibold text-slate-500 dark:text-slate-400">Click any empty cell to plan work.</div>
+        <div className="text-sm font-semibold text-slate-500 dark:text-slate-400">Click any empty cell to plan work. On mobile, swipe horizontally.</div>
       </div>
       <div className="panel min-h-0 flex-1 overflow-auto">
-        <div className="grid min-w-[1050px] grid-cols-[88px_repeat(7,minmax(130px,1fr))]">
+        <div className="grid min-w-[920px] grid-cols-[72px_repeat(7,minmax(118px,1fr))] lg:min-w-[1050px] lg:grid-cols-[88px_repeat(7,minmax(130px,1fr))]">
           <div className="sticky top-0 z-20 border-b border-r border-white/70 bg-white/70 p-3 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70" />
           {days.map((day) => (
             <div key={day.toISOString()} className={`sticky top-0 z-20 border-b border-r border-white/70 p-3 text-center backdrop-blur-xl dark:border-white/10 ${isToday(day) ? 'bg-cyan-100/70 dark:bg-cyan-950/35' : 'bg-white/70 dark:bg-slate-950/70'}`}>

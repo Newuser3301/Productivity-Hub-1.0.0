@@ -170,33 +170,33 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen min-h-[700px] min-w-[1024px] overflow-hidden p-0 text-slate-950 dark:text-slate-100">
+    <div className="flex min-h-screen min-w-[320px] flex-col overflow-x-hidden p-0 pb-24 text-slate-950 dark:text-slate-100 lg:h-screen lg:flex-row lg:overflow-hidden lg:pb-0">
       <Sidebar activeModule={activeModule} onNavigate={setActiveModule} />
-      <div className="m-5 ml-4 flex min-w-0 flex-1 flex-col overflow-hidden rounded-[2rem] border border-cyan-200/50 bg-white/42 shadow-soft backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/45">
-        <header className="shrink-0 px-7 pb-4 pt-5">
-          <div className="mb-5 flex items-center justify-between gap-4">
-            <div className="flex min-w-0 items-center gap-4">
-              <div className="gradient-tile h-14 w-14 shrink-0">
+      <div className="m-3 flex min-w-0 flex-1 flex-col rounded-3xl border border-cyan-200/50 bg-white/42 shadow-soft backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/45 lg:m-5 lg:ml-4 lg:h-[calc(100vh-2.5rem)] lg:overflow-hidden lg:rounded-[2rem]">
+        <header className="shrink-0 px-4 pb-4 pt-4 sm:px-5 lg:px-7 lg:pt-5">
+          <div className="mb-4 flex flex-col gap-4 xl:mb-5 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+              <div className="gradient-tile h-12 w-12 shrink-0 sm:h-14 sm:w-14">
                 <Layers3 className="h-6 w-6" />
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-black uppercase text-cyan-700/70 dark:text-cyan-200/70">Dashboard</p>
-                <h1 className="truncate text-3xl font-black tracking-tight text-slate-900 dark:text-white">{title}</h1>
+                <h1 className="truncate text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">{title}</h1>
                 <p className="truncate text-sm font-semibold text-slate-500 dark:text-slate-400">{subtitle}</p>
               </div>
             </div>
-            <div className="hidden min-w-[360px] flex-1 justify-center px-4 xl:flex">
+            <div className="flex justify-center xl:min-w-[360px] xl:flex-1 xl:px-4">
               <div className="rounded-[1.4rem] border border-white/70 bg-white/46 px-6 py-3 text-center shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/46">
                 <p className="text-[11px] font-black uppercase text-cyan-700/70 dark:text-cyan-200/70">Live Time</p>
-                <p className="mt-1 text-xl font-black tabular-nums text-slate-900 dark:text-white">{format(now, 'yyyy-MM-dd HH:mm:ss')}</p>
+                <p className="mt-1 text-base font-black tabular-nums text-slate-900 dark:text-white sm:text-xl">{format(now, 'yyyy-MM-dd HH:mm:ss')}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-2 xl:justify-end">
               <button className="icon-btn" title="Search" onClick={() => setActivePanel('search')}><Search className="h-5 w-5" /></button>
               <button className="icon-btn" title="Notifications" onClick={() => setActivePanel('notifications')}><Bell className="h-5 w-5" /></button>
               <button className="icon-btn" title={currentUser.role === 'admin' ? 'Settings' : 'Settings are admin-only'} onClick={() => setActivePanel(currentUser.role === 'admin' ? 'settings' : 'notifications')}><Settings className="h-5 w-5" /></button>
               <ThemeToggle darkMode={darkMode} onToggle={() => setDarkMode((value) => !value)} />
-              <div className="ml-1 flex items-center gap-2 rounded-2xl border border-white/70 bg-white/60 px-3 py-2 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/60">
+              <div className="ml-0 flex items-center gap-2 rounded-2xl border border-white/70 bg-white/60 px-3 py-2 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/60 xl:ml-1">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-900 text-sm font-black text-white">{currentUser.initials}</div>
                 <div className="leading-tight">
                   <p className="text-sm font-black text-slate-800 dark:text-white">{currentUser.name}</p>
@@ -206,19 +206,19 @@ export default function App() {
               <button className="icon-btn" title="Logout" onClick={logout}><LogOut className="h-5 w-5" /></button>
             </div>
           </div>
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between xl:gap-4">
             <div className="flex flex-wrap gap-2">
               <span className="stat-chip"><CheckCircle2 className="h-4 w-4 text-emerald-500" /> {openTasks} open tasks</span>
               <span className="stat-chip"><Clock3 className="h-4 w-4 text-cyan-600" /> {timeBlocks.length} time blocks</span>
               <span className="stat-chip"><TimerIcon className="h-4 w-4 text-red-500" /> {pomodoroRunning ? minutesToLabel(pomodoroSeconds) : 'Timer idle'}</span>
               <span className="stat-chip"><Columns3 className="h-4 w-4 text-violet-500" /> {kanbanCards} kanban cards</span>
             </div>
-            <button className="btn-primary" onClick={() => { setActiveModule('matrix'); setQuickAddOpen(true); }} title="Quick add task">
+            <button className="btn-primary w-full sm:w-auto" onClick={() => { setActiveModule('matrix'); setQuickAddOpen(true); }} title="Quick add task">
               <Plus className="h-4 w-4" /> Quick Task
             </button>
           </div>
         </header>
-        <main className="min-h-0 flex-1 overflow-hidden px-7 pb-5 transition-all duration-200">
+        <main className="min-h-0 flex-1 overflow-visible px-4 pb-5 transition-all duration-200 sm:px-5 lg:overflow-hidden lg:px-7">
           <ErrorBoundary name={title}>
             <ActiveComponent onNavigate={setActiveModule} onQuickTask={() => { setActiveModule('matrix'); setQuickAddOpen(true); }} />
           </ErrorBoundary>

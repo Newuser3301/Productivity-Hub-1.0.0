@@ -10,7 +10,7 @@ export default function Matrix() {
   return (
     <div className="flex h-full flex-col gap-4">
       <TaskForm />
-      <div className="grid min-h-0 flex-1 grid-cols-2 gap-4">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-2">
         {QUADRANTS.map((quadrant) => (
           <Quadrant key={quadrant.id} quadrant={quadrant} tasks={tasks[quadrant.id] || []} />
         ))}

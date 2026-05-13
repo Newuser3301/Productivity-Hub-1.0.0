@@ -46,18 +46,18 @@ export default function Timer() {
   }, [playSound]);
 
   return (
-    <div className="grid h-full grid-cols-[1fr_380px] gap-5">
+    <div className="grid h-full gap-5 xl:grid-cols-[1fr_380px]">
       <section className="panel flex flex-col items-center justify-center gap-6 p-8">
         <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black text-white shadow-soft" style={{ background: color }}>
           <Icon className="h-4 w-4" /> {label}
         </div>
-        <div className="relative h-72 w-72 rounded-full bg-white/42 p-2 shadow-inner backdrop-blur-xl dark:bg-slate-900/40">
+        <div className="relative h-60 w-60 rounded-full bg-white/42 p-2 shadow-inner backdrop-blur-xl dark:bg-slate-900/40 sm:h-72 sm:w-72">
           <svg viewBox="0 0 280 280" className="h-full w-full -rotate-90">
             <circle cx="140" cy="140" r={radius} stroke="currentColor" strokeWidth="16" fill="none" className="text-slate-200 dark:text-slate-800" />
             <circle cx="140" cy="140" r={radius} stroke={color} strokeWidth="16" strokeLinecap="round" fill="none" strokeDasharray={circumference} strokeDashoffset={dashOffset} className="transition-all duration-500" />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="text-6xl font-black tabular-nums tracking-tight">{minutesToLabel(secondsLeft)}</div>
+            <div className="text-5xl font-black tabular-nums tracking-tight sm:text-6xl">{minutesToLabel(secondsLeft)}</div>
             <SessionCounter />
           </div>
         </div>

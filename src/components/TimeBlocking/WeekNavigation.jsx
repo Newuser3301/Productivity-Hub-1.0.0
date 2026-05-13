@@ -11,9 +11,9 @@ export default function WeekNavigation() {
   const weekEnd = addDays(weekStart, 6);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <button className="icon-btn" onClick={() => shiftWeek(-1)} title="Previous week"><ChevronLeft className="h-5 w-5" /></button>
-      <button className="btn-ghost min-w-72" onClick={() => setWeek(new Date())} title="Go to current week">
+      <button className="btn-ghost min-w-0 flex-1 sm:min-w-72" onClick={() => setWeek(new Date())} title="Go to current week">
         <CalendarDays className="h-4 w-4" />
         {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d, yyyy')}
       </button>

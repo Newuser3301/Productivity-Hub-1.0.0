@@ -28,9 +28,9 @@ export default function Home({ onNavigate, onQuickTask }) {
   const todayBlocks = blocks.filter((block) => block.date === getTodayKey()).sort((a, b) => a.startHour - b.startHour);
 
   return (
-    <div className="grid h-full grid-cols-[1.4fr_0.9fr] gap-5 overflow-hidden">
-      <section className="min-h-0 space-y-5 overflow-y-auto pr-1">
-        <div className="grid grid-cols-4 gap-4">
+    <div className="grid h-full gap-5 overflow-visible lg:grid-cols-[1.4fr_0.9fr] lg:overflow-hidden">
+      <section className="min-h-0 space-y-5 overflow-visible pr-0 lg:overflow-y-auto lg:pr-1">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {cardMeta.map((item) => (
             <button key={item.id} onClick={() => onNavigate(item.id)} className="soft-card p-4 text-left">
               <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${item.tone} text-white shadow-soft`}>
@@ -50,7 +50,7 @@ export default function Home({ onNavigate, onQuickTask }) {
             </div>
             <button className="btn-primary" onClick={onQuickTask}><Plus className="h-4 w-4" /> Add Task</button>
           </div>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
             <div className="soft-card p-4"><p className="text-xs font-black uppercase text-slate-400">Open Tasks</p><p className="mt-2 text-3xl font-black">{openTasks.length}</p></div>
             <div className="soft-card p-4"><p className="text-xs font-black uppercase text-slate-400">Completed</p><p className="mt-2 text-3xl font-black">{completedTasks.length}</p></div>
             <div className="soft-card p-4"><p className="text-xs font-black uppercase text-slate-400">Today Blocks</p><p className="mt-2 text-3xl font-black">{todayBlocks.length}</p></div>
@@ -78,7 +78,7 @@ export default function Home({ onNavigate, onQuickTask }) {
         </div>
       </section>
 
-      <aside className="flex min-h-0 flex-col gap-5 overflow-y-auto">
+      <aside className="flex min-h-0 flex-col gap-5 overflow-visible lg:overflow-y-auto">
         <div className="panel p-5">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-black">Pomodoro</h2>

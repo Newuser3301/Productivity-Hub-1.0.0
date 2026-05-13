@@ -8,8 +8,8 @@ import { useTimeBlockStore } from '../../store/useTimeBlockStore';
 import { getTodayKey, minutesToLabel } from '../../utils/helpers';
 
 const PanelShell = ({ title, icon: Icon, onClose, children }) => (
-  <div className="fixed inset-0 z-50 flex items-start justify-center bg-cyan-950/30 p-6 pt-24 backdrop-blur-sm">
-    <section className="w-full max-w-2xl rounded-[1.6rem] border border-white/75 bg-white/85 p-5 shadow-soft backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/88">
+  <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-cyan-950/30 p-3 pt-8 backdrop-blur-sm sm:p-6 sm:pt-24">
+    <section className="w-full max-w-2xl rounded-[1.6rem] border border-white/75 bg-white/85 p-4 shadow-soft backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/88 sm:p-5">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="gradient-tile h-11 w-11"><Icon className="h-5 w-5" /></div>
@@ -106,7 +106,7 @@ export function SettingsPanel({ onClose, darkMode, onToggleDarkMode }) {
         </div>
         <div className="soft-card p-4">
           <p className="mb-3 font-black text-slate-900 dark:text-white">Pomodoro Defaults</p>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
               ['focusMinutes', 'Focus'],
               ['shortBreakMinutes', 'Short'],

@@ -15,9 +15,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen min-w-[1024px] items-center justify-center overflow-hidden p-8 text-slate-950 dark:text-white">
-      <div className="glass-shell grid w-full max-w-6xl grid-cols-[1fr_440px] overflow-hidden">
-        <section className="relative min-h-[640px] overflow-hidden bg-gradient-to-br from-cyan-950 via-teal-950 to-slate-950 p-10 text-white">
+    <div className="flex min-h-screen min-w-[320px] items-center justify-center overflow-auto p-3 text-slate-950 dark:text-white sm:p-6 lg:p-8">
+      <div className="glass-shell grid w-full max-w-6xl overflow-hidden lg:grid-cols-[1fr_440px]">
+        <section className="relative min-h-[320px] overflow-hidden bg-gradient-to-br from-cyan-950 via-teal-950 to-slate-950 p-6 text-white sm:p-8 lg:min-h-[640px] lg:p-10">
           <div className="absolute -left-20 top-20 h-72 w-72 rounded-full bg-cyan-300/20 blur-3xl" />
           <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-emerald-300/10 blur-3xl" />
           <div className="relative z-10 flex h-full flex-col justify-between">
@@ -26,12 +26,12 @@ export default function LoginPage() {
                 <Sparkles className="h-8 w-8" />
               </div>
               <p className="text-sm font-black uppercase tracking-wide text-cyan-200">Productivity Hub</p>
-              <h1 className="mt-3 max-w-xl text-5xl font-black leading-tight">Private admin workspace for serious focus.</h1>
+              <h1 className="mt-3 max-w-xl text-3xl font-black leading-tight sm:text-4xl lg:text-5xl">Private admin workspace for serious focus.</h1>
               <p className="mt-5 max-w-lg text-base font-semibold leading-7 text-cyan-50/78">
                 Sign in with the administrator account to manage the full productivity dashboard.
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3 lg:mt-0">
               {['Matrix', 'Schedule', 'Pomodoro'].map((item) => (
                 <div key={item} className="rounded-3xl border border-white/10 bg-white/10 p-4 backdrop-blur-xl">
                   <p className="text-sm font-black">{item}</p>
@@ -42,7 +42,7 @@ export default function LoginPage() {
           </div>
         </section>
 
-        <section className="bg-white/72 p-8 backdrop-blur-2xl dark:bg-slate-950/72">
+        <section className="bg-white/72 p-5 backdrop-blur-2xl dark:bg-slate-950/72 sm:p-8">
           <div className="mb-8">
             <p className="text-xs font-black uppercase text-cyan-700 dark:text-cyan-300">Sign in</p>
             <h2 className="mt-2 text-3xl font-black text-slate-900 dark:text-white">Welcome back</h2>
