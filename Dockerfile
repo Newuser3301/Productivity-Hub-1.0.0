@@ -11,6 +11,7 @@ FROM node:22-alpine AS production
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /app/package*.json ./
+COPY --from=build /app/server.js ./server.js
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/electron ./electron
 COPY --from=build /app/public ./public
