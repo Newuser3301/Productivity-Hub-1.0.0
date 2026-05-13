@@ -38,6 +38,7 @@ Render deployment:
 - Render can use `render.yaml` automatically.
 - Build command: `npm install && npm run build`
 - Start command: `npm start`
+- Add `MONGODB_URI` in Render Environment Variables for MongoDB Atlas persistence.
 
 ## Production Build
 

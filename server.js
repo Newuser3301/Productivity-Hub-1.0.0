@@ -4,21 +4,26 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
+import { MongoClient } from 'mongodb';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.join(__dirname, 'dist');
 const port = Number(process.env.PORT || 4173);
 const databaseFile = process.env.DATABASE_FILE || path.join(__dirname, 'data', 'productivity-hub.sqlite');
+const mongoUri = process.env.MONGODB_URI || '';
+const mongoDatabaseName = process.env.MONGODB_DB || 'caretrack_mrms';
 
 fs.mkdirSync(path.dirname(databaseFile), { recursive: true });
-const database = new DatabaseSync(databaseFile);
-database.exec(`
+const sqliteDatabase = new DatabaseSync(databaseFile);
+sqliteDatabase.exec(`
   CREATE TABLE IF NOT EXISTS app_state (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   )
 `);
+let mongoClient = null;
+let mongoCollection = null;
 
 const stateKeys = new Set(['eisenhower', 'timeBlocks', 'pomodoro', 'kanban']);
 
@@ -53,22 +58,67 @@ const readRequestBody = (request) => new Promise((resolve, reject) => {
   request.on('error', reject);
 });
 
+const initializeDatabase = async () => {
+  if (!mongoUri) return;
+  mongoClient = new MongoClient(mongoUri, {
+    appName: 'ProductivityHub'
+  });
+  await mongoClient.connect();
+  const mongoDatabase = mongoClient.db(mongoDatabaseName);
+  mongoCollection = mongoDatabase.collection('productivity_hub_state');
+  await mongoCollection.createIndex({ key: 1 }, { unique: true });
+};
+
+const getPersistenceInfo = () => mongoCollection
+  ? { type: 'mongodb', database: mongoDatabaseName, collection: 'productivity_hub_state' }
+  : { type: 'sqlite', database: path.basename(databaseFile) };
+
+const getAllState = async () => {
+  if (mongoCollection) {
+    const documents = await mongoCollection.find({}, { projection: { _id: 0, key: 1, value: 1, updatedAt: 1 } }).toArray();
+    return Object.fromEntries(documents.map((document) => [document.key, { value: document.value, updatedAt: document.updatedAt }]));
+  }
+
+  const rows = sqliteDatabase.prepare('SELECT key, value, updated_at FROM app_state').all();
+  return Object.fromEntries(rows.map((row) => [row.key, { value: JSON.parse(row.value), updatedAt: row.updated_at }]));
+};
+
+const getState = async (key) => {
+  if (mongoCollection) {
+    const document = await mongoCollection.findOne({ key }, { projection: { _id: 0, value: 1, updatedAt: 1 } });
+    return document ? { key, value: document.value, updatedAt: document.updatedAt } : { key, value: null };
+  }
+
+  const row = sqliteDatabase.prepare('SELECT value, updated_at FROM app_state WHERE key = ?').get(key);
+  return row ? { key, value: JSON.parse(row.value), updatedAt: row.updated_at } : { key, value: null };
+};
+
+const saveState = async (key, value) => {
+  if (mongoCollection) {
+    const updatedAt = new Date().toISOString();
+    await mongoCollection.updateOne(
+      { key },
+      { $set: { key, value, updatedAt } },
+      { upsert: true }
+    );
+    return;
+  }
+
+  sqliteDatabase.prepare(`
+    INSERT INTO app_state (key, value, updated_at)
+    VALUES (?, ?, CURRENT_TIMESTAMP)
+    ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
+  `).run(key, JSON.stringify(value));
+};
+
 const handleApiRequest = async (request, response, pathname) => {
   if (pathname === '/api/health') {
-    sendJson(response, 200, { ok: true, database: path.basename(databaseFile) });
+    sendJson(response, 200, { ok: true, persistence: getPersistenceInfo() });
     return true;
   }
 
   if (pathname === '/api/state' && request.method === 'GET') {
-    const rows = database.prepare('SELECT key, value, updated_at FROM app_state').all();
-    const state = {};
-    for (const row of rows) {
-      state[row.key] = {
-        value: JSON.parse(row.value),
-        updatedAt: row.updated_at
-      };
-    }
-    sendJson(response, 200, { state });
+    sendJson(response, 200, { state: await getAllState() });
     return true;
   }
 
@@ -79,8 +129,7 @@ const handleApiRequest = async (request, response, pathname) => {
       sendJson(response, 404, { error: 'Unknown state key' });
       return true;
     }
-    const row = database.prepare('SELECT value, updated_at FROM app_state WHERE key = ?').get(key);
-    sendJson(response, 200, row ? { key, value: JSON.parse(row.value), updatedAt: row.updated_at } : { key, value: null });
+    sendJson(response, 200, await getState(key));
     return true;
   }
 
@@ -97,11 +146,7 @@ const handleApiRequest = async (request, response, pathname) => {
         sendJson(response, 400, { error: 'Missing value' });
         return true;
       }
-      database.prepare(`
-        INSERT INTO app_state (key, value, updated_at)
-        VALUES (?, ?, CURRENT_TIMESTAMP)
-        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
-      `).run(key, JSON.stringify(payload.value));
+      await saveState(key, payload.value);
       sendJson(response, 200, { ok: true, key });
       return true;
     } catch (error) {
@@ -142,15 +187,17 @@ const server = http.createServer(async (request, response) => {
   fs.createReadStream(finalPath).pipe(response);
 });
 
+await initializeDatabase();
 server.listen(port, '0.0.0.0', () => {
   console.log(`Productivity Hub web server running on port ${port}`);
-  console.log(`SQLite database: ${databaseFile}`);
+  console.log(`Persistence: ${JSON.stringify(getPersistenceInfo())}`);
 });
 
 const shutdown = (signal) => {
   console.log(`${signal} received, shutting down Productivity Hub web server.`);
   server.close(() => {
-    database.close();
+    sqliteDatabase.close();
+    mongoClient?.close();
     process.exit(0);
   });
 };
