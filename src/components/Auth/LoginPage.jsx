@@ -1,24 +1,17 @@
 // src/components/Auth/LoginPage.jsx
 import { useState } from 'react';
 import { LockKeyhole, LogIn, Sparkles, UserRound } from 'lucide-react';
-import { DEMO_ACCOUNTS, useAuthStore } from '../../store/useAuthStore';
+import { useAuthStore } from '../../store/useAuthStore';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin123');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const login = useAuthStore((state) => state.login);
   const loginError = useAuthStore((state) => state.loginError);
-  const clearError = useAuthStore((state) => state.clearError);
 
   const submit = (event) => {
     event.preventDefault();
     login(username, password);
-  };
-
-  const fillAccount = (account) => {
-    clearError();
-    setUsername(account.username);
-    setPassword(account.password);
   };
 
   return (
@@ -33,9 +26,9 @@ export default function LoginPage() {
                 <Sparkles className="h-8 w-8" />
               </div>
               <p className="text-sm font-black uppercase tracking-wide text-cyan-200">Productivity Hub</p>
-              <h1 className="mt-3 max-w-xl text-5xl font-black leading-tight">Role-based workspace for serious focus.</h1>
+              <h1 className="mt-3 max-w-xl text-5xl font-black leading-tight">Private admin workspace for serious focus.</h1>
               <p className="mt-5 max-w-lg text-base font-semibold leading-7 text-cyan-50/78">
-                Admin users can manage settings and the full dashboard. User accounts get a clean daily productivity workspace.
+                Sign in with the administrator account to manage the full productivity dashboard.
               </p>
             </div>
             <div className="grid grid-cols-3 gap-3">
@@ -53,17 +46,7 @@ export default function LoginPage() {
           <div className="mb-8">
             <p className="text-xs font-black uppercase text-cyan-700 dark:text-cyan-300">Sign in</p>
             <h2 className="mt-2 text-3xl font-black text-slate-900 dark:text-white">Welcome back</h2>
-            <p className="mt-2 text-sm font-semibold text-slate-500 dark:text-slate-400">Choose a demo account or enter credentials.</p>
-          </div>
-
-          <div className="mb-5 grid grid-cols-2 gap-3">
-            {DEMO_ACCOUNTS.map((account) => (
-              <button key={account.id} className="soft-card p-4 text-left" onClick={() => fillAccount(account)}>
-                <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-900 text-sm font-black text-white">{account.initials}</div>
-                <p className="font-black text-slate-900 dark:text-white">{account.role === 'admin' ? 'Admin' : 'User'}</p>
-                <p className="text-xs font-bold text-slate-400">{account.username} / {account.password}</p>
-              </button>
-            ))}
+            <p className="mt-2 text-sm font-semibold text-slate-500 dark:text-slate-400">Enter your administrator credentials.</p>
           </div>
 
           <form className="space-y-4" onSubmit={submit}>
@@ -71,14 +54,14 @@ export default function LoginPage() {
               Username
               <span className="relative mt-2 block">
                 <UserRound className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-                <input className="input pl-10" value={username} onChange={(event) => setUsername(event.target.value)} autoFocus />
+                <input className="input pl-10" value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="username" autoFocus />
               </span>
             </label>
             <label className="block text-sm font-black text-slate-600 dark:text-slate-300">
               Password
               <span className="relative mt-2 block">
                 <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-                <input className="input pl-10" type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+                <input className="input pl-10" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" />
               </span>
             </label>
             {loginError && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">{loginError}</div>}

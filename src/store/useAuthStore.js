@@ -2,22 +2,18 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+export const ADMIN_ACCOUNT = {
+  id: 'admin-1',
+  name: 'New User Admin',
+  username: 'newuser007',
+  password: 'vo\\1)£G2G.N8',
+  role: 'admin',
+  initials: 'NU'
+};
+
 export const DEMO_ACCOUNTS = [
   {
-    id: 'admin-1',
-    name: 'Michael Admin',
-    username: 'admin',
-    password: 'admin123',
-    role: 'admin',
-    initials: 'MA'
-  },
-  {
-    id: 'user-1',
-    name: 'Productivity User',
-    username: 'user',
-    password: 'user123',
-    role: 'user',
-    initials: 'PU'
+    ...ADMIN_ACCOUNT
   }
 ];
 

@@ -18,12 +18,9 @@ npm run dev
 
 The Electron window opens at `1200x800` with a minimum size of `1024x700`.
 
-## Login Accounts
+## Login
 
-- Admin: `admin` / `admin123`
-- User: `user` / `user123`
-
-Admin accounts can open Settings. User accounts can use the productivity modules without admin settings access.
+The app uses a single administrator account configured in `src/store/useAuthStore.js`.
 
 ## Web Preview / Render
 
