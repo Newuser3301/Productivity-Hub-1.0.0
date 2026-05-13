@@ -1,5 +1,5 @@
 # Dockerfile
-FROM node:18-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
 RUN apk add --no-cache python3 make g++ wine xvfb
 COPY package*.json ./
@@ -7,7 +7,7 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-FROM node:18-alpine AS production
+FROM node:22-alpine AS production
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /app/package*.json ./
