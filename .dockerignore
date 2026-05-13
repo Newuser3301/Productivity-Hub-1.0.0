@@ -1,0 +1,11 @@
+# .dockerignore
+node_modules
+dist
+release
+.git
+.idea
+.vscode
+npm-debug.log
+Dockerfile
+docker-compose.yml
+*.local

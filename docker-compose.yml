@@ -1,0 +1,18 @@
+# docker-compose.yml
+services:
+  productivity-hub:
+    build:
+      context: .
+      target: production
+    container_name: productivity-hub
+    environment:
+      NODE_ENV: production
+      VITE_APP_NAME: Productivity Hub
+    ports:
+      - "4173:4173"
+    volumes:
+      - productivity-hub-data:/root/.config/Productivity Hub
+    command: ["npm", "run", "preview"]
+
+volumes:
+  productivity-hub-data:

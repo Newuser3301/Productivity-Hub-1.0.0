@@ -1,0 +1,69 @@
+{
+  "name": "productivity-hub",
+  "version": "1.0.0",
+  "description": "A 4-in-1 Electron desktop productivity hub for Windows.",
+  "author": "Productivity Hub",
+  "main": "electron/main.js",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "concurrently \"vite --host 0.0.0.0\" \"wait-on tcp:5173 && electron .\"",
+    "start": "node server.js",
+    "electron:start": "electron .",
+    "build": "vite build",
+    "dist": "npm run build && electron-builder --win nsis portable",
+    "docker:build": "docker compose build",
+    "docker:run": "docker compose up productivity-hub",
+    "lint": "eslint .",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "6.0.1",
+    "date-fns": "4.1.0",
+    "electron-store": "10.1.0",
+    "electron-updater": "6.6.2",
+    "lucide-react": "0.468.0",
+    "react": "18.3.1",
+    "react-beautiful-dnd": "13.1.1",
+    "react-dom": "18.3.1",
+    "vite": "8.0.0",
+    "zustand": "5.0.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.1",
+    "autoprefixer": "10.4.20",
+    "concurrently": "9.2.1",
+    "electron": "42.0.1",
+    "electron-builder": "26.0.12",
+    "eslint": "9.39.1",
+    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "5.2.0",
+    "postcss": "8.4.49",
+    "tailwindcss": "3.4.17",
+    "wait-on": "8.0.4"
+  },
+  "build": {
+    "appId": "com.productivityhub.desktop",
+    "productName": "Productivity Hub",
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "public",
+      "output": "release"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "public/icon.ico",
+      "signAndEditExecutable": false
+    }
+  }
+}

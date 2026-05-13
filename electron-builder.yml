@@ -1,0 +1,22 @@
+# electron-builder.yml
+appId: com.productivityhub.desktop
+productName: Productivity Hub
+directories:
+  output: release
+  buildResources: public
+files:
+  - dist/**/*
+  - electron/**/*
+  - package.json
+win:
+  icon: public/icon.ico
+  signAndEditExecutable: false
+  target:
+    - nsis
+    - portable
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+publish:
+  provider: generic
+  url: https://example.com/productivity-hub/updates
