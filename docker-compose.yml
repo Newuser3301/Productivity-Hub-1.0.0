@@ -8,10 +8,11 @@ services:
     environment:
       NODE_ENV: production
       VITE_APP_NAME: Productivity Hub
+      DATABASE_FILE: /app/data/productivity-hub.sqlite
     ports:
       - "4173:4173"
     volumes:
-      - productivity-hub-data:/root/.config/Productivity Hub
+      - productivity-hub-data:/app/data
     command: ["node", "server.js"]
 
 volumes:

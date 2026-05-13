@@ -20,6 +20,7 @@ import { useTimeBlockStore } from './store/useTimeBlockStore';
 import { useAuthStore } from './store/useAuthStore';
 import { QUADRANTS, STORAGE_KEYS } from './utils/constants';
 import { minutesToLabel } from './utils/helpers';
+import { createDebouncedDatabaseSave, databaseKeys, loadDatabaseState } from './utils/databaseSync';
 
 const moduleTitles = {
   dashboard: ['Main Menu', 'Your live productivity command center.'],
@@ -67,6 +68,72 @@ export default function App() {
       setQuickAddOpen(true);
     });
   }, []);
+
+  useEffect(() => {
+    if (!currentUser) return undefined;
+    let hydrated = false;
+    const debouncedSave = createDebouncedDatabaseSave();
+
+    const hydrateFromDatabase = async () => {
+      const state = await loadDatabaseState();
+      if (state[databaseKeys.eisenhower]?.tasks) {
+        useEisenhowerStore.setState({ tasks: state[databaseKeys.eisenhower].tasks });
+      }
+      if (state[databaseKeys.timeBlocks]?.blocks) {
+        useTimeBlockStore.setState({
+          blocks: state[databaseKeys.timeBlocks].blocks,
+          weekStart: state[databaseKeys.timeBlocks].weekStart || useTimeBlockStore.getState().weekStart
+        });
+      }
+      if (state[databaseKeys.pomodoro]?.settings) {
+        usePomodoroStore.setState({
+          settings: state[databaseKeys.pomodoro].settings,
+          mode: state[databaseKeys.pomodoro].mode || 'focus',
+          secondsLeft: state[databaseKeys.pomodoro].secondsLeft || state[databaseKeys.pomodoro].settings.focusMinutes * 60,
+          completedFocusSessions: state[databaseKeys.pomodoro].completedFocusSessions || 0,
+          dailyFocus: state[databaseKeys.pomodoro].dailyFocus || {}
+        });
+      }
+      if (state[databaseKeys.kanban]?.columns) {
+        useKanbanStore.setState({
+          columns: state[databaseKeys.kanban].columns,
+          search: ''
+        });
+      }
+      hydrated = true;
+    };
+
+    hydrateFromDatabase();
+
+    const unsubscribers = [
+      useEisenhowerStore.subscribe((state) => {
+        if (!hydrated) return;
+        debouncedSave(databaseKeys.eisenhower, { tasks: state.tasks });
+      }),
+      useTimeBlockStore.subscribe((state) => {
+        if (!hydrated) return;
+        debouncedSave(databaseKeys.timeBlocks, { weekStart: state.weekStart, blocks: state.blocks });
+      }),
+      usePomodoroStore.subscribe((state) => {
+        if (!hydrated) return;
+        debouncedSave(databaseKeys.pomodoro, {
+          settings: state.settings,
+          mode: state.mode,
+          secondsLeft: state.secondsLeft,
+          completedFocusSessions: state.completedFocusSessions,
+          dailyFocus: state.dailyFocus
+        });
+      }),
+      useKanbanStore.subscribe((state) => {
+        if (!hydrated) return;
+        debouncedSave(databaseKeys.kanban, { columns: state.columns });
+      })
+    ];
+
+    return () => {
+      unsubscribers.forEach((unsubscribe) => unsubscribe());
+    };
+  }, [currentUser]);
 
   useEffect(() => {
     const onKeyDown = (event) => {

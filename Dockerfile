@@ -16,5 +16,5 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/electron ./electron
 COPY --from=build /app/public ./public
 RUN npm install --omit=dev
-VOLUME ["/root/.config/Productivity Hub"]
+VOLUME ["/app/data"]
 CMD ["node", "server.js"]

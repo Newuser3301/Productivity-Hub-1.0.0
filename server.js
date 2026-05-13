@@ -3,10 +3,24 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { DatabaseSync } from 'node:sqlite';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.join(__dirname, 'dist');
 const port = Number(process.env.PORT || 4173);
+const databaseFile = process.env.DATABASE_FILE || path.join(__dirname, 'data', 'productivity-hub.sqlite');
+
+fs.mkdirSync(path.dirname(databaseFile), { recursive: true });
+const database = new DatabaseSync(databaseFile);
+database.exec(`
+  CREATE TABLE IF NOT EXISTS app_state (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+const stateKeys = new Set(['eisenhower', 'timeBlocks', 'pomodoro', 'kanban']);
 
 const mimeTypes = {
   '.html': 'text/html; charset=utf-8',
@@ -18,8 +32,96 @@ const mimeTypes = {
   '.json': 'application/json; charset=utf-8'
 };
 
-const server = http.createServer((request, response) => {
+const sendJson = (response, status, payload) => {
+  response.writeHead(status, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'no-cache'
+  });
+  response.end(JSON.stringify(payload));
+};
+
+const readRequestBody = (request) => new Promise((resolve, reject) => {
+  let body = '';
+  request.on('data', (chunk) => {
+    body += chunk;
+    if (body.length > 2_000_000) {
+      reject(new Error('Request body too large'));
+      request.destroy();
+    }
+  });
+  request.on('end', () => resolve(body));
+  request.on('error', reject);
+});
+
+const handleApiRequest = async (request, response, pathname) => {
+  if (pathname === '/api/health') {
+    sendJson(response, 200, { ok: true, database: path.basename(databaseFile) });
+    return true;
+  }
+
+  if (pathname === '/api/state' && request.method === 'GET') {
+    const rows = database.prepare('SELECT key, value, updated_at FROM app_state').all();
+    const state = {};
+    for (const row of rows) {
+      state[row.key] = {
+        value: JSON.parse(row.value),
+        updatedAt: row.updated_at
+      };
+    }
+    sendJson(response, 200, { state });
+    return true;
+  }
+
+  const match = pathname.match(/^\/api\/state\/([a-zA-Z0-9_-]+)$/);
+  if (match && request.method === 'GET') {
+    const key = match[1];
+    if (!stateKeys.has(key)) {
+      sendJson(response, 404, { error: 'Unknown state key' });
+      return true;
+    }
+    const row = database.prepare('SELECT value, updated_at FROM app_state WHERE key = ?').get(key);
+    sendJson(response, 200, row ? { key, value: JSON.parse(row.value), updatedAt: row.updated_at } : { key, value: null });
+    return true;
+  }
+
+  if (match && request.method === 'PUT') {
+    const key = match[1];
+    if (!stateKeys.has(key)) {
+      sendJson(response, 404, { error: 'Unknown state key' });
+      return true;
+    }
+    try {
+      const body = await readRequestBody(request);
+      const payload = JSON.parse(body || '{}');
+      if (!Object.hasOwn(payload, 'value')) {
+        sendJson(response, 400, { error: 'Missing value' });
+        return true;
+      }
+      database.prepare(`
+        INSERT INTO app_state (key, value, updated_at)
+        VALUES (?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
+      `).run(key, JSON.stringify(payload.value));
+      sendJson(response, 200, { ok: true, key });
+      return true;
+    } catch (error) {
+      sendJson(response, 400, { error: error.message });
+      return true;
+    }
+  }
+
+  if (pathname.startsWith('/api/')) {
+    sendJson(response, 404, { error: 'Not found' });
+    return true;
+  }
+
+  return false;
+};
+
+const server = http.createServer(async (request, response) => {
   const requestedPath = decodeURIComponent(new URL(request.url, `http://${request.headers.host}`).pathname);
+  if (await handleApiRequest(request, response, requestedPath)) return;
+
   const safePath = requestedPath === '/' ? '/index.html' : requestedPath;
   const filePath = path.normalize(path.join(distDir, safePath));
 
@@ -42,11 +144,13 @@ const server = http.createServer((request, response) => {
 
 server.listen(port, '0.0.0.0', () => {
   console.log(`Productivity Hub web server running on port ${port}`);
+  console.log(`SQLite database: ${databaseFile}`);
 });
 
 const shutdown = (signal) => {
   console.log(`${signal} received, shutting down Productivity Hub web server.`);
   server.close(() => {
+    database.close();
     process.exit(0);
   });
 };
