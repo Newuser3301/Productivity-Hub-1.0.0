@@ -20,7 +20,7 @@ The Electron window opens at `1200x800` with a minimum size of `1024x700`.
 
 ## Login
 
-The app uses a single administrator account configured in `src/store/useAuthStore.js`.
+The app uses a single administrator account configured through environment variables. Set `ADMIN_USERNAME` and `ADMIN_PASSWORD` before starting the web server or Electron app. See `.env.example` for the full list of supported values.
 
 ## Web Preview / Render
 
@@ -39,6 +39,7 @@ Render deployment:
 - Build command: `npm install && npm run build`
 - Start command: `npm start`
 - Add `MONGODB_URI` in Render Environment Variables for MongoDB Atlas persistence.
+- Add `ADMIN_USERNAME` and `ADMIN_PASSWORD` in Render Environment Variables so the state API is protected.
 
 ## Production Build
 

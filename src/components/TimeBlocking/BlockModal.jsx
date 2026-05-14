@@ -1,20 +1,26 @@
 // src/components/TimeBlocking/BlockModal.jsx
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import { BLOCK_COLORS } from '../../utils/constants';
+import { BLOCK_COLORS, HOURS } from '../../utils/constants';
+import { clamp, minutesToDurationLabel } from '../../utils/helpers';
 
 export default function BlockModal({ slot, onClose, onSave }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [duration, setDuration] = useState(1);
+  const [durationMinutes, setDurationMinutes] = useState(60);
   const [color, setColor] = useState(BLOCK_COLORS[0].value);
 
   if (!slot) return null;
 
+  const maxDurationMinutes = (HOURS[HOURS.length - 1] + 1 - slot.hour) * 60;
+  const durationHours = Math.floor(durationMinutes / 60);
+  const durationRemainderMinutes = durationMinutes % 60;
+  const setClampedDurationMinutes = (value) => setDurationMinutes(clamp(Math.round(Number(value) || 1), 1, maxDurationMinutes));
+
   const submit = (event) => {
     event.preventDefault();
     if (!title.trim()) return;
-    onSave({ date: slot.date, startHour: slot.hour, duration: Number(duration), title: title.trim(), description: description.trim(), color });
+    onSave({ date: slot.date, startHour: slot.hour, duration: durationMinutes / 60, title: title.trim(), description: description.trim(), color });
   };
 
   return (
@@ -31,10 +37,52 @@ export default function BlockModal({ slot, onClose, onSave }) {
           <input className="input" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Title" autoFocus />
           <textarea className="input min-h-24 resize-none" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Description" />
           <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300">
-            Duration
-            <select className="input mt-1" value={duration} onChange={(event) => setDuration(event.target.value)}>
-              {[1, 2, 3, 4].map((value) => <option key={value} value={value}>{value} hour{value > 1 ? 's' : ''}</option>)}
-            </select>
+            Duration <span className="text-xs font-black text-cyan-700 dark:text-cyan-300">({minutesToDurationLabel(durationMinutes)})</span>
+            <div className="mt-1 grid grid-cols-2 gap-2 sm:grid-cols-[1fr_1fr_1.25fr]">
+              <span>
+                <span className="mb-1 block text-xs font-black uppercase text-slate-400">Hours</span>
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  max={Math.floor(maxDurationMinutes / 60)}
+                  value={durationHours}
+                  onChange={(event) => setClampedDurationMinutes((Number(event.target.value) * 60) + durationRemainderMinutes)}
+                />
+              </span>
+              <span>
+                <span className="mb-1 block text-xs font-black uppercase text-slate-400">Minutes</span>
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={durationRemainderMinutes}
+                  onChange={(event) => setClampedDurationMinutes((durationHours * 60) + clamp(Number(event.target.value) || 0, 0, 59))}
+                />
+              </span>
+              <span className="col-span-2 sm:col-span-1">
+                <span className="mb-1 block text-xs font-black uppercase text-slate-400">Total minutes</span>
+                <input
+                  className="input"
+                  type="number"
+                  min="1"
+                  max={maxDurationMinutes}
+                  value={durationMinutes}
+                  onChange={(event) => setClampedDurationMinutes(event.target.value)}
+                />
+              </span>
+            </div>
+            <input
+              className="mt-3 w-full accent-cyan-700"
+              type="range"
+              min="1"
+              max={maxDurationMinutes}
+              step="5"
+              value={durationMinutes}
+              onChange={(event) => setClampedDurationMinutes(event.target.value)}
+              title="Fine tune duration"
+            />
           </label>
           <div>
             <p className="mb-2 text-sm font-semibold text-slate-600 dark:text-slate-300">Color</p>

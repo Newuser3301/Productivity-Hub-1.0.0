@@ -26,6 +26,17 @@ export const minutesToLabel = (seconds) => {
   return `${mins}:${secs}`;
 };
 
+export const durationHoursToMinutes = (duration) => Math.max(1, Math.round(Number(duration || 0) * 60));
+
+export const minutesToDurationLabel = (minutes) => {
+  const normalizedMinutes = Math.max(1, Math.round(Number(minutes || 0)));
+  const hours = Math.floor(normalizedMinutes / 60);
+  const remainingMinutes = normalizedMinutes % 60;
+  if (hours && remainingMinutes) return `${hours}h ${remainingMinutes}m`;
+  if (hours) return `${hours}h`;
+  return `${remainingMinutes}m`;
+};
+
 export const getTodayKey = () => format(new Date(), 'yyyy-MM-dd');
 
 export const classNames = (...classes) => classes.filter(Boolean).join(' ');

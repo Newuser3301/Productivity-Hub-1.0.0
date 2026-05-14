@@ -6,12 +6,15 @@ import { useAuthStore } from '../../store/useAuthStore';
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const login = useAuthStore((state) => state.login);
   const loginError = useAuthStore((state) => state.loginError);
 
-  const submit = (event) => {
+  const submit = async (event) => {
     event.preventDefault();
-    login(username, password);
+    setIsSubmitting(true);
+    await login(username, password);
+    setIsSubmitting(false);
   };
 
   return (
@@ -65,7 +68,9 @@ export default function LoginPage() {
               </span>
             </label>
             {loginError && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">{loginError}</div>}
-            <button className="btn-primary w-full py-3"><LogIn className="h-5 w-5" /> Login</button>
+            <button className="btn-primary w-full py-3" disabled={isSubmitting}>
+              <LogIn className="h-5 w-5" /> {isSubmitting ? 'Signing in...' : 'Login'}
+            </button>
           </form>
         </section>
       </div>

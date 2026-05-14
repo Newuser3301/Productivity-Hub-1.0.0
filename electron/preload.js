@@ -2,6 +2,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  login: (credentials) => ipcRenderer.invoke('auth:login', credentials),
   pomodoroStatus: (status) => ipcRenderer.send('pomodoro:status', status),
   notifySessionEnd: (payload) => ipcRenderer.send('pomodoro:session-end', payload),
   onNavigate: (callback) => {

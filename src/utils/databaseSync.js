@@ -8,10 +8,16 @@ export const databaseKeys = {
 
 const canUseServerApi = () => typeof window !== 'undefined' && !window.location.protocol.startsWith('file');
 
+const getAuthHeaders = () => {
+  const storedAuth = JSON.parse(localStorage.getItem('productivity-hub-auth') || '{}');
+  const token = storedAuth?.state?.currentUser?.token;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 export const loadDatabaseState = async () => {
   if (!canUseServerApi()) return {};
   try {
-    const response = await fetch('/api/state', { headers: { Accept: 'application/json' } });
+    const response = await fetch('/api/state', { headers: { Accept: 'application/json', ...getAuthHeaders() } });
     if (!response.ok) throw new Error(`Database load failed: ${response.status}`);
     const data = await response.json();
     return Object.fromEntries(Object.entries(data.state || {}).map(([key, entry]) => [key, entry.value]));
@@ -26,7 +32,7 @@ export const saveDatabaseState = async (key, value) => {
   try {
     await fetch(`/api/state/${key}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ value })
     });
   } catch (error) {

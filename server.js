@@ -2,16 +2,39 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
+import { Buffer } from 'node:buffer';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import { MongoClient } from 'mongodb';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const loadEnvFile = () => {
+  const envPath = path.join(__dirname, '.env');
+  if (!fs.existsSync(envPath)) return;
+  const lines = fs.readFileSync(envPath, 'utf8').split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const separator = trimmed.indexOf('=');
+    if (separator === -1) continue;
+    const key = trimmed.slice(0, separator).trim();
+    const value = trimmed.slice(separator + 1).trim().replace(/^["']|["']$/g, '');
+    if (key && process.env[key] === undefined) process.env[key] = value;
+  }
+};
+
+loadEnvFile();
+
 const distDir = path.join(__dirname, 'dist');
 const port = Number(process.env.PORT || 4173);
 const databaseFile = process.env.DATABASE_FILE || path.join(__dirname, 'data', 'productivity-hub.sqlite');
 const mongoUri = process.env.MONGODB_URI || '';
-const mongoDatabaseName = process.env.MONGODB_DB || 'caretrack_mrms';
+const mongoDatabaseName = process.env.MONGODB_DB || 'productivity_hub';
+const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+const adminPassword = process.env.ADMIN_PASSWORD || '';
+const sessions = new Map();
 
 fs.mkdirSync(path.dirname(databaseFile), { recursive: true });
 const sqliteDatabase = new DatabaseSync(databaseFile);
@@ -43,6 +66,52 @@ const sendJson = (response, status, payload) => {
     'Cache-Control': 'no-cache'
   });
   response.end(JSON.stringify(payload));
+};
+
+const safeCompare = (left, right) => {
+  const leftBuffer = Buffer.from(left);
+  const rightBuffer = Buffer.from(right);
+  return leftBuffer.length === rightBuffer.length && crypto.timingSafeEqual(leftBuffer, rightBuffer);
+};
+
+const buildUser = () => ({
+  id: 'admin-1',
+  name: process.env.ADMIN_NAME || 'Productivity Admin',
+  username: adminUsername,
+  role: 'admin',
+  initials: process.env.ADMIN_INITIALS || 'PA'
+});
+
+const authenticateCredentials = (username, password) => {
+  if (!adminPassword) {
+    return { ok: false, status: 503, error: 'Admin password is not configured.' };
+  }
+  const isValid = safeCompare(username, adminUsername) && safeCompare(password, adminPassword);
+  return isValid
+    ? { ok: true, user: buildUser() }
+    : { ok: false, status: 401, error: 'Username yoki parol notogri.' };
+};
+
+const createSession = (user) => {
+  const token = crypto.randomBytes(32).toString('base64url');
+  sessions.set(token, { user, createdAt: Date.now() });
+  return token;
+};
+
+const getBearerToken = (request) => {
+  const authorization = request.headers.authorization || '';
+  const match = authorization.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1] : '';
+};
+
+const requireAuth = (request, response) => {
+  const token = getBearerToken(request);
+  const session = token ? sessions.get(token) : null;
+  if (!session) {
+    sendJson(response, 401, { error: 'Authentication required' });
+    return null;
+  }
+  return { token, ...session };
 };
 
 const readRequestBody = (request) => new Promise((resolve, reject) => {
@@ -114,6 +183,35 @@ const saveState = async (key, value) => {
 const handleApiRequest = async (request, response, pathname) => {
   if (pathname === '/api/health') {
     sendJson(response, 200, { ok: true, persistence: getPersistenceInfo() });
+    return true;
+  }
+
+  if (pathname === '/api/auth/login' && request.method === 'POST') {
+    try {
+      const body = await readRequestBody(request);
+      const payload = JSON.parse(body || '{}');
+      const result = authenticateCredentials(String(payload.username || ''), String(payload.password || ''));
+      if (!result.ok) {
+        sendJson(response, result.status, { error: result.error });
+        return true;
+      }
+      const token = createSession(result.user);
+      sendJson(response, 200, { user: { ...result.user, token } });
+      return true;
+    } catch (error) {
+      sendJson(response, 400, { error: error.message });
+      return true;
+    }
+  }
+
+  if (pathname === '/api/auth/logout' && request.method === 'POST') {
+    const token = getBearerToken(request);
+    if (token) sessions.delete(token);
+    sendJson(response, 200, { ok: true });
+    return true;
+  }
+
+  if (pathname.startsWith('/api/state') && !requireAuth(request, response)) {
     return true;
   }
 

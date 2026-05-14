@@ -2,43 +2,59 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export const ADMIN_ACCOUNT = {
-  id: 'admin-1',
-  name: 'New User Admin',
-  username: 'newuser007',
-  password: 'vo\\1)£G2G.N8',
-  role: 'admin',
-  initials: 'NU'
+const isFileProtocol = () => typeof window !== 'undefined' && window.location.protocol.startsWith('file');
+
+const authenticateWithElectron = async (username, password) => {
+  if (!window.electronAPI?.login) return null;
+  return window.electronAPI.login({ username, password });
 };
 
-export const DEMO_ACCOUNTS = [
-  {
-    ...ADMIN_ACCOUNT
+const authenticateWithServer = async (username, password) => {
+  const response = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.error || 'Username yoki parol notogri.');
   }
-];
+  return payload;
+};
+
+const logoutFromServer = async (token) => {
+  if (!token || isFileProtocol()) return;
+  await fetch('/api/auth/logout', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`
+    }
+  }).catch(() => undefined);
+};
 
 export const useAuthStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       currentUser: null,
       loginError: '',
-      login: (username, password) => {
-        const user = DEMO_ACCOUNTS.find((account) => account.username === username.trim() && account.password === password);
-        if (!user) {
-          set({ loginError: 'Username yoki parol notogri.' });
+      login: async (username, password) => {
+        try {
+          const credentials = { username: username.trim(), password };
+          const result = await authenticateWithElectron(credentials.username, credentials.password)
+            || await authenticateWithServer(credentials.username, credentials.password);
+          set({ currentUser: result.user, loginError: '' });
+          return true;
+        } catch (error) {
+          set({ loginError: error.message || 'Username yoki parol notogri.' });
           return false;
         }
-        const safeUser = {
-          id: user.id,
-          name: user.name,
-          username: user.username,
-          role: user.role,
-          initials: user.initials
-        };
-        set({ currentUser: safeUser, loginError: '' });
-        return true;
       },
-      logout: () => set({ currentUser: null, loginError: '' }),
+      logout: () => {
+        const token = get().currentUser?.token;
+        set({ currentUser: null, loginError: '' });
+        logoutFromServer(token);
+      },
       clearError: () => set({ loginError: '' })
     }),
     {

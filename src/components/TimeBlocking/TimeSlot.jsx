@@ -1,11 +1,13 @@
 // src/components/TimeBlocking/TimeSlot.jsx
 import { X } from 'lucide-react';
-import { clamp } from '../../utils/helpers';
+import { clamp, durationHoursToMinutes, minutesToDurationLabel } from '../../utils/helpers';
 import { useTimeBlockStore } from '../../store/useTimeBlockStore';
+import { HOURS } from '../../utils/constants';
 
 export default function TimeSlot({ dateKey, hour, block, onEmptyClick, onMoveBlock }) {
   const deleteBlock = useTimeBlockStore((state) => state.deleteBlock);
   const resizeBlock = useTimeBlockStore((state) => state.resizeBlock);
+  const blockDurationMinutes = durationHoursToMinutes(block?.duration);
 
   const handleDrop = (event) => {
     event.preventDefault();
@@ -47,6 +49,7 @@ export default function TimeSlot({ dateKey, hour, block, onEmptyClick, onMoveBlo
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="truncate text-sm font-black">{block.title}</p>
+              <p className="text-[11px] font-black uppercase opacity-90">{minutesToDurationLabel(blockDurationMinutes)}</p>
               <p className="line-clamp-2 text-xs opacity-90">{block.description}</p>
             </div>
             <button type="button" className="rounded bg-white/20 p-1 opacity-0 transition hover:bg-white/30 group-hover:opacity-100" onClick={(event) => { event.stopPropagation(); deleteBlock(block.id); }} title="Delete block">
@@ -55,13 +58,14 @@ export default function TimeSlot({ dateKey, hour, block, onEmptyClick, onMoveBlo
           </div>
           <input
             type="range"
-            min="1"
-            max={clamp(22 - block.startHour, 1, 8)}
-            value={block.duration}
+            min="15"
+            max={clamp((HOURS[HOURS.length - 1] + 1 - block.startHour) * 60, 15, 8 * 60)}
+            step="15"
+            value={blockDurationMinutes}
             className="absolute bottom-1 left-2 right-2 h-1 opacity-0 transition group-hover:opacity-100"
             onClick={(event) => event.stopPropagation()}
-            onChange={(event) => resizeBlock(block.id, Number(event.target.value))}
-            title="Resize duration"
+            onChange={(event) => resizeBlock(block.id, Number(event.target.value) / 60)}
+            title={`Resize duration (${minutesToDurationLabel(blockDurationMinutes)})`}
           />
         </div>
       )}
