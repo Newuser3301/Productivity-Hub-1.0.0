@@ -9,7 +9,7 @@ export const QUADRANTS = [
 export const HOURS = Array.from({ length: 17 }, (_, index) => index + 6);
 
 export const BLOCK_COLORS = [
-  { name: 'Coral', value: '#ef4444' },
+  { name: 'Signal Red', value: '#dc2626' },
   { name: 'Ocean', value: '#2563eb' },
   { name: 'Amber', value: '#d97706' },
   { name: 'Mint', value: '#059669' },
